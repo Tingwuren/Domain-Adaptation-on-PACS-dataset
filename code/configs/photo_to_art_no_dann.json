@@ -1,0 +1,20 @@
+{
+  "dann": false,
+  "source_domain": "photo",
+  "target_domain": "art",
+  "batch_size": 128,
+  "lr": 5e-3,
+  "epochs": 30,
+  "alpha": 0.0,
+  "momentum": 0.9,
+  "weight_decay": 5e-5,
+  "step_size": 20,
+  "gamma": 0.1,
+  "device": "auto",
+  "num_workers": 4,
+  "save_model": true,
+  "show_plots": true,
+  "eval_train": false,
+  "pretrained": true,
+  "seed": 42
+}

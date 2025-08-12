@@ -8,11 +8,26 @@ Original file is located at
 # Import models and utils from github
 
 import os
+import subprocess
+import shutil
 
+# Check if we need to clone the repository (for Colab compatibility)
 if not os.path.isdir('./models'):
-  !git clone https://github.com/robertofranceschi/Domain-adaptation-on-PACS-dataset.git
-  !cp -r "/content/Domain-adaptation-on-PACS-dataset/code/models" "/content/"
-  !cp -r "/content/Domain-adaptation-on-PACS-dataset/code/utils" "/content/"
+    print("Models directory not found. Checking if we're in the right location...")
+    # If running locally, the models should already be in the code/ directory
+    if os.path.isdir('../models'):
+        print("Found models in parent directory. You're likely running from the wrong location.")
+        print("Please run this script from the repository root, not from the code/ subdirectory.")
+    else:
+        print("This appears to be a Colab environment. Cloning repository...")
+        # For Colab compatibility only
+        try:
+            subprocess.run(['git', 'clone', 'https://github.com/robertofranceschi/Domain-adaptation-on-PACS-dataset.git'], check=True)
+            shutil.copytree('/content/Domain-adaptation-on-PACS-dataset/code/models', '/content/models')
+            shutil.copytree('/content/Domain-adaptation-on-PACS-dataset/code/utils', '/content/utils')
+        except Exception as e:
+            print(f"Error setting up environment: {e}")
+            print("Please ensure models and utils directories are available.")
 
 # Import libraries
 
@@ -82,7 +97,13 @@ transf = transforms.Compose([ #transforms.Resize(227),      # Resizes short size
 
 # Clone github repository with data
 if not os.path.isdir('./Homework3-PACS'):
-  !git clone https://github.com/MachineLearning2020/Homework3-PACS
+    print("PACS dataset not found. Attempting to download...")
+    try:
+        subprocess.run(['git', 'clone', 'https://github.com/MachineLearning2020/Homework3-PACS'], check=True)
+        print("PACS dataset downloaded successfully.")
+    except Exception as e:
+        print(f"Error downloading PACS dataset: {e}")
+        print("Please manually clone: git clone https://github.com/MachineLearning2020/Homework3-PACS")
 
 # Define datasets root
 DIR_PHOTO = 'Homework3-PACS/PACS/photo'

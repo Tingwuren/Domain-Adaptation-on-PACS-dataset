@@ -2,14 +2,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import os
-from google.colab import output
+
+# Check if running in Google Colab
+try:
+    from google.colab import output
+    COLAB_AVAILABLE = True
+except ImportError:
+    COLAB_AVAILABLE = False
 
 # SHOW SOME RANDOM IMAGES
 def show_random_images(dataset, n=5, mean=None, std=None):
 	for i in range(n):
-	    j = np.random.randint(0, len(dataset))
-	    print('Label:',dataset[j][1])
-	    imgshow(dataset[j][0], mean=mean, std=std)
+		j = np.random.randint(0, len(dataset))
+		print('Label:',dataset[j][1])
+		imgshow(dataset[j][0], mean=mean, std=std)
 
 	return
 
@@ -33,21 +39,41 @@ def imgshow(img, mean=None, std=None):
 		plt.show()
 	return
 
-def plotLosses(class_loss, source_loss, target_loss, n_epochs=30, show=False) : 
+def plotLosses(class_loss, source_loss, target_loss, n_epochs=30, output_dir=None, show=False) : 
 	epochs = range(n_epochs)
-	# class_loss = [2.341, 0.806, 0.682, 0.279, 0.216, 0.186 , 0.146, 0.162, 0.164, 0.086, 0.083, 0.123, 0.113, 0.091, 0.139, 0.132, 0.086, 0.099, 0.072, 0.075, 0.112, 0.077, 0.149, 0.088, 0.057, 0.092, 0.098, 0.080, 0.076, 0.088]
-	# source_loss = [0.936, 0.850, 0.075, 0.040, 0.057, 0.067, 0.092, 0.070, 0.018, 0.065, 0.071, 0.068, 0.177, 0.088, 0.054, 0.023, 0.081, 0.070, 0.045, 0.067, 0.076, 0.079, 0.057, 0.057, 0.121, 0.049, 0.060, 0.012, 0.048, 0.117]
-	# target_loss = [0.545, 0.139, 0.130, 0.102, 0.120, 0.079, 0.055, 0.115, 0.024, 0.047, 0.033, 0.044, 0.095, 0.023, 0.022, 0.039, 0.062, 0.029, 0.026, 0.123, 0.032, 0.038, 0.071, 0.047, 0.029, 0.063, 0.077, 0.040, 0.044, 0.044]
-	plt.figure()
+	plt.figure(figsize=(12, 8))
 	plt.xlabel('Iterations')
 	plt.ylabel('Loss')
-	plt.plot(epochs, class_loss, 'b--', label="classifier")
-	plt.plot(epochs, source_loss, 'g--', label="discriminator source")
-	plt.plot(epochs, target_loss, 'r--', label="discriminator target")
+	
+	# Always plot classifier loss
+	plt.plot(epochs, class_loss, 'b--', label="classifier", linewidth=2)
+	
+	# Only plot domain losses if they exist and have data
+	if source_loss and len(source_loss) > 0:
+		plt.plot(epochs, source_loss, 'g--', label="discriminator source", linewidth=2)
+	
+	if target_loss and len(target_loss) > 0:
+		plt.plot(epochs, target_loss, 'r--', label="discriminator target", linewidth=2)
+	
 	plt.legend()
+	plt.title('Training Losses Over Time')
+	plt.grid(True, alpha=0.3)
+	
+	# Save to output directory if provided, otherwise current directory
+	if output_dir:
+		save_path = os.path.join(output_dir, 'losses.png')
+		os.makedirs(output_dir, exist_ok=True)
+	else:
+		save_path = 'losses.png'
+		
+	plt.savefig(save_path, dpi=250, bbox_inches='tight')
+	
 	if show: 
-		plt.savefig('losses.png', dpi=250)
-	return
+		plt.show()
+	else:
+		plt.close()  # Close figure to free memory
+		
+	return save_path
 
 def plotImageDistribution(data1, data2, data3, data4, dataset_names, classes_names, show=False):
 	# concatenate datasets
@@ -104,5 +130,8 @@ def plotImageDistribution(data1, data2, data3, data4, dataset_names, classes_nam
 
 def beep():
 	# Play an audio beep. Any audio URL will do.
-	output.eval_js('new Audio("https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg").play()')
+	if COLAB_AVAILABLE:
+		output.eval_js('new Audio("https://upload.wikimedia.org/wikipedia/commons/0/05/Beep-09.ogg").play()')
+	else:
+		print("Beep! (Audio only available in Google Colab)")
 	return 
