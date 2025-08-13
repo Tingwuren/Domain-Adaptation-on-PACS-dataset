@@ -225,7 +225,7 @@ def train_epoch(net, source_loader, target_loader, optimizer, criterion, device,
         loss_class = criterion(class_outputs, source_labels)
         epoch_class_loss.append(loss_class.item())
         
-        loss_class.backward()
+        # loss_class.backward()
         
         total_loss = loss_class
         
@@ -249,21 +249,21 @@ def train_epoch(net, source_loader, target_loader, optimizer, criterion, device,
             labels_discr_source = torch.zeros(min_batch_size, dtype=torch.int64).to(device)
             loss_discr_source = criterion(source_domain_outputs, labels_discr_source)
             epoch_source_loss.append(loss_discr_source.item())
-            loss_discr_source.backward()
+            # loss_discr_source.backward()
             
             # Train domain discriminator with target data (label = 1)
             target_domain_outputs = net.forward(target_domain_batch, alpha=args.alpha)
             labels_discr_target = torch.ones(min_batch_size, dtype=torch.int64).to(device)
             loss_discr_target = criterion(target_domain_outputs, labels_discr_target)
             epoch_target_loss.append(loss_discr_target.item())
-            loss_discr_target.backward()
+            # loss_discr_target.backward()
             
             # Add domain adaptation losses with proper weighting
-            # domain_loss = (loss_discr_source + loss_discr_target) * args.alpha
-            # total_loss = total_loss + domain_loss
+            domain_loss = (loss_discr_source + loss_discr_target) * args.alpha
+            total_loss = total_loss + domain_loss
         
         # Backward pass and optimization
-        # total_loss.backward()
+        total_loss.backward()
         optimizer.step()
     
     return epoch_class_loss, epoch_source_loss, epoch_target_loss
@@ -393,7 +393,7 @@ def main():
     
     # CSV logging setup
     csv_path = os.path.join(args.output_dir, 'training_metrics.csv')
-    csv_fieldnames = ['epoch', 'lr', 'avg_class_loss', 'avg_source_loss', 'avg_target_loss', 'val_accuracy', 'val_loss']
+    csv_fieldnames = ['epoch', 'lr', 'avg_class_loss', 'avg_source_loss', 'avg_target_loss', 'val_accuracy', 'avg_val_loss']
     
     with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
         csv_writer = csv.DictWriter(csvfile, fieldnames=csv_fieldnames)
@@ -448,7 +448,7 @@ def main():
                 'avg_source_loss': avg_source_loss,
                 'avg_target_loss': avg_target_loss,
                 'val_accuracy': val_acc,
-                'val_loss': val_loss if val_loss is not None else 0.0
+                'avg_val_loss': val_loss if val_loss is not None else 0.0
             }
             csv_writer.writerow(csv_row)
             csvfile.flush()  # Ensure data is written immediately

@@ -12,7 +12,7 @@
   "gamma": 0.1,
   "device": "auto",
   "num_workers": 4,
-  "save_model": true,
+  "save_model": false,
   "show_plots": true,
   "eval_train": false,
   "pretrained": true,
